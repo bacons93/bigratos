@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 #define RAT_INFO_VERSION "0.1-dev"
 #define DB_DIR "/usr/ports/db"
@@ -17,6 +18,30 @@ static void print_help(void) {
     printf("Examples:\n");
     printf("  rat-info\n");
     printf("  rat-info bash\n");
+}
+
+static bool is_valid_package_name(const char *pkg) {
+    if (pkg == NULL || pkg[0] == '\0') {
+        return false;
+    }
+
+    for (size_t i = 0; pkg[i] != '\0'; i++) {
+        unsigned char ch = (unsigned char)pkg[i];
+
+        if (
+            isalnum(ch) ||
+            ch == '-' ||
+            ch == '_' ||
+            ch == '.' ||
+            ch == '+'
+        ) {
+            continue;
+        }
+
+        return false;
+    }
+
+    return true;
 }
 
 static int print_file_or_none(const char *path) {
@@ -77,6 +102,11 @@ static int show_installed_packages(void) {
 }
 
 static int show_package_info(const char *pkg) {
+    if (!is_valid_package_name(pkg)) {
+        fprintf(stderr, "error: invalid package name '%s'\n", pkg);
+        return 1;
+    }
+
     if (!package_is_installed(pkg)) {
         printf(">> %s is not installed\n", pkg);
         return 1;
