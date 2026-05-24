@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 #define RAT_SEARCH_VERSION "0.1-dev"
 #define REPO_URL "https://dists.jewguard.xyz/bigratos/"
@@ -15,6 +16,30 @@ static void print_help(void) {
     printf("Examples:\n");
     printf("  rat-search bash\n");
     printf("  rat-search gcc\n");
+}
+
+static bool is_valid_query(const char *query) {
+    if (query == NULL || query[0] == '\0') {
+        return false;
+    }
+
+    for (size_t i = 0; query[i] != '\0'; i++) {
+        unsigned char ch = (unsigned char)query[i];
+
+        if (
+            isalnum(ch) ||
+            ch == '-' ||
+            ch == '_' ||
+            ch == '.' ||
+            ch == '+'
+        ) {
+            continue;
+        }
+
+        return false;
+    }
+
+    return true;
 }
 
 static bool extract_package_name(const char *line, char *out, size_t out_size) {
@@ -42,6 +67,11 @@ static bool extract_package_name(const char *line, char *out, size_t out_size) {
 }
 
 static int search_repo(const char *query) {
+    if (!is_valid_query(query)) {
+        fprintf(stderr, "error: invalid search query '%s'\n", query);
+        return 1;
+    }
+
     FILE *pipe = popen("curl -fsSL " REPO_URL, "r");
 
     if (pipe == NULL) {
