@@ -15,5 +15,15 @@ rat-info-c: $(C_SRC)/rat-info.c
 rat-search-c: $(C_SRC)/rat-search.c
 	$(CC) $(CFLAGS) $< -o $@
 
+test: all
+	./rat-version --help
+	./rat-version --version
+	./rat-info-c --help
+	./rat-info-c --version
+	./rat-info-c testpkg || true
+	./rat-search-c --help
+	./rat-search-c --version
+	./rat-search-c definitelynotapackage || true
+
 clean:
 	rm -f $(BINARIES)
