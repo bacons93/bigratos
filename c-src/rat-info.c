@@ -20,6 +20,10 @@ static void print_help(void) {
     printf("  rat-info bash\n");
 }
 
+/* Only allow simple package/search names.
+ * This avoids path traversal-like input such as '../bad'
+ * and avoids slash-separated names such as 'bad/name'.
+ */
 static bool is_valid_package_name(const char *pkg) {
     if (pkg == NULL || pkg[0] == '\0') {
         return false;
