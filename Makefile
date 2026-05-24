@@ -21,6 +21,8 @@ test: all
 	./rat-info-c --help
 	./rat-info-c --version
 	./rat-info-c testpkg || true
+	./rat-info-c ../bad || true
+	./rat-info-c bad/name || true
 	./rat-search-c --help
 	./rat-search-c --version
 	./rat-search-c definitelynotapackage || true
