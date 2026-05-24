@@ -26,6 +26,8 @@ test: all
 	./rat-search-c --help
 	./rat-search-c --version
 	./rat-search-c definitelynotapackage || true
+	./rat-search-c ../bad || true
+	./rat-search-c bad/name || true
 
 clean:
 	rm -f $(BINARIES)
