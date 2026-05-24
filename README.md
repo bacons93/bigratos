@@ -10,9 +10,15 @@ Early shell-based package manager tools for BigRatOS.
 - `rat-info` - shows package information
 - `rat-update` - updates package/repo info
 
-## Building C helpers
+## Experimental C helpers
 
 Some experimental C helpers are in `c-src/`.
+
+Current helpers:
+
+- `rat-version`
+- `rat-info-c`
+- `rat-search-c`
 
 Build them with:
 
@@ -22,6 +28,7 @@ Run examples:
 
     ./rat-version --help
     ./rat-info-c --help
+    ./rat-search-c --help
 
 Clean built binaries with:
 
