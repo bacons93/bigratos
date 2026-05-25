@@ -128,8 +128,7 @@ static int show_package_info(const char *pkg) {
         return 1;
     }
 
-    print_file_or_none(files_path);
-    return 0;
+    return print_file_or_none(files_path);
 }
 
 int main(int argc, char *argv[]) {
