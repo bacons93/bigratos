@@ -3,6 +3,9 @@
 #include <string.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #define RAT_SEARCH_VERSION "0.1-dev"
 #define REPO_URL "https://dists.jewguard.xyz/bigratos/"
@@ -70,16 +73,75 @@ static bool extract_package_name(const char *line, char *out, size_t out_size) {
     return true;
 }
 
+static FILE *open_repo_stream(pid_t *child_pid) {
+    int fds[2];
+
+    if (pipe(fds) != 0) {
+        fprintf(stderr, "error: failed to create pipe\n");
+        return NULL;
+    }
+
+    pid_t pid = fork();
+
+    if (pid < 0) {
+        close(fds[0]);
+        close(fds[1]);
+        fprintf(stderr, "error: failed to fork curl process\n");
+        return NULL;
+    }
+
+    if (pid == 0) {
+        close(fds[0]);
+
+        if (dup2(fds[1], STDOUT_FILENO) < 0) {
+            _exit(127);
+        }
+
+        close(fds[1]);
+
+        execlp("curl", "curl", "-fsSL", REPO_URL, (char *)NULL);
+        _exit(127);
+    }
+
+    close(fds[1]);
+
+    FILE *stream = fdopen(fds[0], "r");
+    if (stream == NULL) {
+        close(fds[0]);
+        fprintf(stderr, "error: failed to open curl output stream\n");
+        return NULL;
+    }
+
+    *child_pid = pid;
+    return stream;
+}
+
+static int wait_for_curl(pid_t pid) {
+    int status;
+
+    if (waitpid(pid, &status, 0) < 0) {
+        fprintf(stderr, "error: failed to wait for curl\n");
+        return 1;
+    }
+
+    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+        fprintf(stderr, "error: failed to fetch repository index\n");
+        return 1;
+    }
+
+    return 0;
+}
+
 static int search_repo(const char *query) {
     if (!is_valid_query(query)) {
         fprintf(stderr, "error: invalid search query '%s'\n", query);
         return 1;
     }
 
-    FILE *pipe = popen("curl -fsSL " REPO_URL, "r");
+    pid_t curl_pid;
+    FILE *stream = open_repo_stream(&curl_pid);
 
-    if (pipe == NULL) {
-        fprintf(stderr, "error: failed to run curl\n");
+    if (stream == NULL) {
         return 1;
     }
 
@@ -87,7 +149,7 @@ static int search_repo(const char *query) {
     char pkg[512];
     bool found = false;
 
-    while (fgets(line, sizeof(line), pipe) != NULL) {
+    while (fgets(line, sizeof(line), stream) != NULL) {
         if (!extract_package_name(line, pkg, sizeof(pkg))) {
             continue;
         }
@@ -98,10 +160,9 @@ static int search_repo(const char *query) {
         }
     }
 
-    int status = pclose(pipe);
+    fclose(stream);
 
-    if (status != 0) {
-        fprintf(stderr, "error: failed to fetch repository index\n");
+    if (wait_for_curl(curl_pid) != 0) {
         return 1;
     }
 
