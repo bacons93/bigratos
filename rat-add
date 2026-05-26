@@ -2,9 +2,26 @@
 PKG="$1"
 PORTS_DIR="/usr/ports/tmp"
 DB="/usr/ports/db"
+RAT_NAME_MAX=255
+
 fail() { echo "error: $1"; exit 1; }
 check_dep() { [ -x "$1" ] || fail "$2"; }
+
+is_valid_name() {
+  [ -n "$1" ] || return 1
+  [ "${#1}" -le "$RAT_NAME_MAX" ] || return 1
+
+  case "$1" in
+    *[!A-Za-z0-9._+-]*)
+      return 1
+      ;;
+  esac
+
+  return 0
+}
+
 [ -z "$PKG" ] && echo "usage: rat-add <pkg>" && exit 1
+is_valid_name "$PKG" || fail "invalid package name '$PKG'"
 
 echo ">> RAT-CONFTEST stage started"
 ARCH="$(uname -m)"
