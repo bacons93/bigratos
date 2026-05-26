@@ -21,6 +21,10 @@ is_valid_name() {
 }
 
 [ -z "$PKG" ] && echo "usage: rat-add <pkg>" && exit 1
+
+# Normalize package names so inputs like 'Neofetch' resolve as 'neofetch'.
+PKG=$(printf '%s' "$PKG" | tr '[:upper:]' '[:lower:]')
+
 is_valid_name "$PKG" || fail "invalid package name '$PKG'"
 
 echo ">> RAT-CONFTEST stage started"
