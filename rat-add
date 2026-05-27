@@ -5,8 +5,8 @@ DB="/usr/ports/db"
 RAT_NAME_MAX=255
 TMPFILE=""
 WORKDIR=""
-RAT_BEFORE="/tmp/rat-before-$$.txt"
-RAT_AFTER="/tmp/rat-after-$$.txt"
+RAT_BEFORE="${PORTS_DIR}/rat-before-$$.txt"
+RAT_AFTER="${PORTS_DIR}/rat-after-$$.txt"
 
 cleanup() {
   [ -n "$TMPFILE" ] && rm -f "$TMPFILE"
