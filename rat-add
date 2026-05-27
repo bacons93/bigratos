@@ -41,6 +41,15 @@ PKG=$(printf '%s' "$PKG" | tr '[:upper:]' '[:lower:]')
 
 is_valid_name "$PKG" || fail "invalid package name '$PKG'"
 
+case " ${RAT_INSTALL_STACK:-} " in
+  *" $PKG "*)
+    fail "dependency cycle detected while installing '$PKG'"
+    ;;
+esac
+
+RAT_INSTALL_STACK="${RAT_INSTALL_STACK:-} $PKG "
+export RAT_INSTALL_STACK
+
 echo ">> RAT-CONFTEST stage started"
 ARCH="$(uname -m)"
 GCC_VER="$(gcc -dumpfullversion 2>/dev/null)"
