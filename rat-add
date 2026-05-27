@@ -97,13 +97,13 @@ MAX_RETRIES=10
 attempt=0
 installed_deps=""
 
+find / -not -path '/proc/*' -not -path '/sys/*' -not -path '/usr/ports/*' \
+       -not -path '/dev/*' -not -path '/tmp/*' \
+       -type f 2>/dev/null | sort > "$RAT_BEFORE"
+
 while [ $attempt -lt $MAX_RETRIES ]; do
     attempt=$((attempt + 1))
     echo ">> build attempt $attempt..."
-
-    find / -not -path '/proc/*' -not -path '/sys/*' -not -path '/usr/ports/*' \
-           -not -path '/dev/*' -not -path '/tmp/*' \
-           -type f 2>/dev/null | sort > "$RAT_BEFORE"
 
     BUILD_LOG=$(sh -e ratbuild.sh 2>&1)
     BUILD_EXIT=$?
