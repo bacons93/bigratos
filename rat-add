@@ -3,6 +3,20 @@ PKG="$1"
 PORTS_DIR="/usr/ports/tmp"
 DB="/usr/ports/db"
 RAT_NAME_MAX=255
+TMPFILE=""
+WORKDIR=""
+RAT_BEFORE="/tmp/rat-before-$$.txt"
+RAT_AFTER="/tmp/rat-after-$$.txt"
+
+cleanup() {
+  [ -n "$TMPFILE" ] && rm -f "$TMPFILE"
+  [ -n "$WORKDIR" ] && rm -rf "$WORKDIR"
+  rm -f "$RAT_BEFORE" "$RAT_AFTER"
+}
+
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 fail() { echo "error: $1"; exit 1; }
 check_dep() { [ -x "$1" ] || fail "$2"; }
@@ -89,7 +103,7 @@ while [ $attempt -lt $MAX_RETRIES ]; do
 
     find / -not -path '/proc/*' -not -path '/sys/*' -not -path '/usr/ports/*' \
            -not -path '/dev/*' -not -path '/tmp/*' \
-           -type f 2>/dev/null | sort > /tmp/rat-before.txt
+           -type f 2>/dev/null | sort > "$RAT_BEFORE"
 
     BUILD_LOG=$(sh -e ratbuild.sh 2>&1)
     BUILD_EXIT=$?
@@ -163,9 +177,9 @@ done
 
 find / -not -path '/proc/*' -not -path '/sys/*' -not -path '/usr/ports/*' \
        -not -path '/dev/*' -not -path '/tmp/*' \
-       -type f 2>/dev/null | sort > /tmp/rat-after.txt
-comm -13 /tmp/rat-before.txt /tmp/rat-after.txt > "$DB/${PKG}.files"
-rm -f /tmp/rat-before.txt /tmp/rat-after.txt
+       -type f 2>/dev/null | sort > "$RAT_AFTER"
+comm -13 "$RAT_BEFORE" "$RAT_AFTER" > "$DB/${PKG}.files"
+rm -f "$RAT_BEFORE" "$RAT_AFTER"
 
 grep -qxF "$PKG" "$DB/installed" 2>/dev/null || echo "$PKG" >> "$DB/installed"
 echo ">> done."
