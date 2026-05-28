@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-
-#define RAT_VERSION "0.1-dev"
+#include "util.h"
 
 static void print_help(void) {
     printf("rat-version - show BigRatOS rat package tools version\n\n");

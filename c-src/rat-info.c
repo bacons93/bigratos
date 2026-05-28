@@ -5,7 +5,6 @@
 
 #include "util.h"
 
-#define RAT_INFO_VERSION "0.1-dev"
 #define DB_DIR "/usr/ports/db"
 #define INSTALLED_FILE "/usr/ports/db/installed"
 
@@ -121,7 +120,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (strcmp(argv[1], "--version") == 0) {
-        printf("rat-info %s\n", RAT_INFO_VERSION);
+        printf("rat-info %s\n", RAT_VERSION);
         return 0;
     }
 

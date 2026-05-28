@@ -8,7 +8,6 @@
 
 #include "util.h"
 
-#define RAT_SEARCH_VERSION "0.1-dev"
 #define REPO_URL "https://dists.jewguard.xyz/bigratos/"
 
 static void print_help(void) {
@@ -160,7 +159,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (strcmp(argv[1], "--version") == 0) {
-        printf("rat-search %s\n", RAT_SEARCH_VERSION);
+        printf("rat-search %s\n", RAT_VERSION);
         return 0;
     }
 
