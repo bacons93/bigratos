@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -pedantic
 
 C_SRC = c-src
-BINARIES = rat-version rat-info-c rat-search-c
+BINARIES = rat-version rat-info-c rat-search-c rat-add-c
 
 all: $(BINARIES)
 
@@ -14,6 +14,9 @@ rat-info-c: $(C_SRC)/rat-info.c $(C_SRC)/util.c $(C_SRC)/util.h
 
 rat-search-c: $(C_SRC)/rat-search.c $(C_SRC)/util.c $(C_SRC)/util.h
 	$(CC) $(CFLAGS) $(C_SRC)/rat-search.c $(C_SRC)/util.c -o $@
+
+rat-add-c: $(C_SRC)/rat-add.c $(C_SRC)/util.c $(C_SRC)/util.h
+	$(CC) $(CFLAGS) $(C_SRC)/rat-add.c $(C_SRC)/util.c -o $@
 
 test: all
 	./rat-version --help
