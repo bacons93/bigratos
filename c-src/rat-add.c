@@ -522,7 +522,7 @@ int main(int argc, char **argv) {
             printf(">> detected missing dependency: %s -> package: %s\n", raw_dep, dep_buf);
             free(raw_dep);
 
-            if (strlen(installed_deps) + 3 >= sizeof(stack)) {
+            if (strlen(installed_deps) + strlen(dep_buf) + 3 >= sizeof(installed_deps)) {
     fail("installed dependency list is too long");
 }
 stack[0] = '\0';
