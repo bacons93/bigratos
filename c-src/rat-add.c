@@ -525,14 +525,16 @@ int main(int argc, char **argv) {
             if (strlen(installed_deps) + strlen(dep_buf) + 3 >= sizeof(installed_deps)) {
     fail("installed dependency list is too long");
 }
-stack[0] = '\0';
-strcat(stack, " ");
-strcat(stack, installed_deps);
-strcat(stack, " ");
-            if (strstr(stack, dep_buf) != NULL) {
-                char msg[320];
-                snprintf(msg, sizeof(msg), "already tried installing '%s', still failing. giving up.", dep_buf);
-                fail(msg);
+{
+                char dep_marker[RAT_NAME_MAX + 3];
+
+                snprintf(dep_marker, sizeof(dep_marker), " %s ", dep_buf);
+
+                if (strstr(installed_deps, dep_marker) != NULL) {
+                    char msg[320];
+                    snprintf(msg, sizeof(msg), "already tried installing '%s', still failing. giving up.", dep_buf);
+                    fail(msg);
+                }
             }
 
             dep_resolved = resolve_dep_pkg(dep_buf);
