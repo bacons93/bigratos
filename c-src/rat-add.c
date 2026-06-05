@@ -20,6 +20,8 @@ static char workdir[512];
 static char rat_before[512];
 static char rat_after[512];
 
+static volatile sig_atomic_t got_signal = 0;
+
 static void cleanup(void) {
     char cmd[1200];
 
@@ -42,14 +44,21 @@ static void cleanup(void) {
 }
 
 static void handle_signal(int sig) {
-    cleanup();
-    if (sig == SIGINT) {
+    got_signal = sig;
+}
+
+static void check_signal(void) {
+    if (got_signal == SIGINT) {
         exit(130);
     }
-    if (sig == SIGTERM) {
+
+    if (got_signal == SIGTERM) {
         exit(143);
     }
-    exit(1);
+
+    if (got_signal != 0) {
+        exit(1);
+    }
 }
 
 static void fail(const char *msg) {
@@ -482,10 +491,14 @@ int main(int argc, char **argv) {
         int build_exit;
         char *build_log;
 
+        check_signal();
+
         printf(">> build attempt %d...\n", attempt);
 
         snprintf(cmd, sizeof(cmd), "sh -e ratbuild.sh > '%s' 2>&1", build_log_path);
         build_exit = run_cmd(cmd);
+
+        check_signal();
 
         build_log = capture_cmd((snprintf(cmd, sizeof(cmd), "cat '%s'", build_log_path), cmd));
         if (build_log != NULL) {
