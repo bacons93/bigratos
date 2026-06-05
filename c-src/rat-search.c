@@ -8,7 +8,6 @@
 
 #include "util.h"
 
-#define REPO_URL "https://dists.jewguard.xyz/bigratos/"
 
 static void print_help(void) {
     printf("rat-search - search BigRatOS repository packages\n\n");

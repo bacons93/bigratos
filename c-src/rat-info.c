@@ -5,8 +5,6 @@
 
 #include "util.h"
 
-#define DB_DIR "/usr/ports/db"
-#define INSTALLED_FILE "/usr/ports/db/installed"
 
 static void print_help(void) {
     printf("rat-info - show BigRatOS package information\n\n");

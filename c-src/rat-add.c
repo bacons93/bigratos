@@ -12,9 +12,6 @@
 #include "util.h"
 
 #define PORTS_DIR "/usr/ports/tmp"
-#define DB_DIR "/usr/ports/db"
-#define INSTALLED_FILE "/usr/ports/db/installed"
-#define REPO_URL "https://dists.jewguard.xyz/bigratos/x64-runit/"
 #define RAT_NAME_MAX 255
 #define MAX_RETRIES 10
 
@@ -226,7 +223,7 @@ static char *resolve_pkg(const char *pkg) {
              "| grep -o 'href=\"%s[^\"]*\\.tar\\.xz\"' "
              "| sed 's/href=\"//;s/\\.tar\\.xz\"//' "
              "| sort -V | tail -1",
-             REPO_URL, pkg);
+             REPO_X64_RUNIT_URL, pkg);
 
     resolved = capture_cmd(cmd);
     if (resolved == NULL) {
@@ -433,7 +430,7 @@ int main(int argc, char **argv) {
 
     printf(">> resolved: %s\n", resolved);
 
-    snprintf(url, sizeof(url), "%s%s.tar.xz", REPO_URL, resolved);
+    snprintf(url, sizeof(url), "%s%s.tar.xz", REPO_X64_RUNIT_URL, resolved);
     snprintf(rat_tmpfile, sizeof(rat_tmpfile), "%s/%s.tar.xz", PORTS_DIR, resolved);
     snprintf(workdir, sizeof(workdir), "%s/%s", PORTS_DIR, resolved);
     snprintf(rat_before, sizeof(rat_before), "%s/rat-before-%ld.txt", PORTS_DIR, (long)pid);
