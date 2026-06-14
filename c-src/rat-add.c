@@ -23,16 +23,40 @@ static char build_log_path[512];
 
 static volatile sig_atomic_t got_signal = 0;
 
-static void cleanup(void) {
-    char cmd[1200];
+static int remove_tree(const char *path) {
+    pid_t pid;
+    int status;
 
+    if (path == NULL || path[0] == '\0') {
+        return 0;
+    }
+
+    pid = fork();
+    if (pid < 0) {
+        return 1;
+    }
+
+    if (pid == 0) {
+        execlp("rm", "rm", "-rf", "--", path, (char *)NULL);
+        _exit(127);
+    }
+
+    while (waitpid(pid, &status, 0) < 0) {
+        if (errno != EINTR) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static void cleanup(void) {
     if (rat_tmpfile[0] != '\0') {
         remove(rat_tmpfile);
     }
 
     if (workdir[0] != '\0') {
-        snprintf(cmd, sizeof(cmd), "rm -rf -- '%s'", workdir);
-        system(cmd);
+        remove_tree(workdir);
     }
 
     if (rat_before[0] != '\0') {
