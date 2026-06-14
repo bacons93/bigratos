@@ -340,7 +340,8 @@ static char *detect_missing_dep(const char *log_path) {
     char *raw;
 
     snprintf(cmd, sizeof(cmd),
-        "grep -oE "
+        "head -n 2000 '%s' "
+        "| grep -oE "
         "\"Can't exec \\\\\\\"([a-zA-Z0-9_-]+)\\\\\\\"|"
         "([a-zA-Z0-9_-]+): command not found|"
         "failed to run ([a-zA-Z0-9_-]+)|"
@@ -351,7 +352,7 @@ static char *detect_missing_dep(const char *log_path) {
         "fatal error: ([a-zA-Z0-9_-]+)\\\\.h|"
         "Package ([a-zA-Z0-9_-]+) was not found|"
         "([a-zA-Z0-9_-]+) is required|"
-        "missing: ([a-zA-Z0-9_-]+)\" '%s' "
+        "missing: ([a-zA-Z0-9_-]+)\" "
         "| grep -oE '[a-zA-Z0-9][a-zA-Z0-9_-]+' "
         "| grep -v '^error$'   | grep -v '^fatal$' "
         "| grep -v '^not$'     | grep -v '^found$' "
