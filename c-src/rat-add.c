@@ -265,6 +265,11 @@ static char *resolve_dep_pkg(const char *pkg) {
 
     if (strncmp(pkg, "lib", 3) == 0 && strlen(pkg) > 3) {
         snprintf(nolib, sizeof(nolib), "%s", pkg + 3);
+
+        if (!is_valid_name(nolib)) {
+            return NULL;
+        }
+
         return resolve_pkg(nolib);
     }
 
