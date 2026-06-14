@@ -19,6 +19,7 @@ static char rat_tmpfile[512];
 static char workdir[512];
 static char rat_before[512];
 static char rat_after[512];
+static char build_log_path[512];
 
 static volatile sig_atomic_t got_signal = 0;
 
@@ -40,6 +41,10 @@ static void cleanup(void) {
 
     if (rat_after[0] != '\0') {
         remove(rat_after);
+    }
+
+    if (build_log_path[0] != '\0') {
+        remove(build_log_path);
     }
 }
 
@@ -360,7 +365,6 @@ int main(int argc, char **argv) {
     char *resolved;
     char url[1024];
     char cmd[2048];
-    char build_log_path[512];
     char installed_deps[4096] = "";
     int attempt;
     int build_ok = 0;
@@ -370,6 +374,7 @@ int main(int argc, char **argv) {
     workdir[0] = '\0';
     rat_before[0] = '\0';
     rat_after[0] = '\0';
+    build_log_path[0] = '\0';
 
     atexit(cleanup);
     signal(SIGINT, handle_signal);
