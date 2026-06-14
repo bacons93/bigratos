@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
@@ -79,6 +80,8 @@ static FILE *open_repo_stream(pid_t *child_pid) {
     FILE *stream = fdopen(fds[0], "r");
     if (stream == NULL) {
         close(fds[0]);
+        kill(pid, SIGTERM);
+        waitpid(pid, NULL, 0);
         fprintf(stderr, "error: failed to open curl output stream\n");
         return NULL;
     }
