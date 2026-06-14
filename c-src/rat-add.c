@@ -390,16 +390,28 @@ int main(int argc, char **argv) {
         fail(msg);
     }
 
-    snprintf(stack, sizeof(stack), " %s ", getenv("RAT_INSTALL_STACK") ? getenv("RAT_INSTALL_STACK") : "");
+    {
+        const char *env_stack = getenv("RAT_INSTALL_STACK");
 
-    if (strstr(stack, pkg) != NULL) {
-        char msg[320];
-        snprintf(msg, sizeof(msg), "dependency cycle detected while installing '%s'", pkg);
-        fail(msg);
+        if (env_stack != NULL && strlen(env_stack) > 2048) {
+            fail("RAT_INSTALL_STACK is too long");
+        }
+
+        if (env_stack == NULL) {
+            env_stack = "";
+        }
+
+        snprintf(stack, sizeof(stack), " %s ", env_stack);
+
+        if (strstr(stack, pkg) != NULL) {
+            char msg[320];
+            snprintf(msg, sizeof(msg), "dependency cycle detected while installing '%s'", pkg);
+            fail(msg);
+        }
+
+        snprintf(new_stack, sizeof(new_stack), "%s %s ", env_stack, pkg);
+        setenv("RAT_INSTALL_STACK", new_stack, 1);
     }
-
-    snprintf(new_stack, sizeof(new_stack), "%s %s ", getenv("RAT_INSTALL_STACK") ? getenv("RAT_INSTALL_STACK") : "", pkg);
-    setenv("RAT_INSTALL_STACK", new_stack, 1);
 
     printf(">> RAT-CONFTEST stage started\n");
 
