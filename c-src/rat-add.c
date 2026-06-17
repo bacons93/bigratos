@@ -2,10 +2,12 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/file.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -22,6 +24,9 @@ static char rat_after[512];
 static char build_log_path[512];
 
 static volatile sig_atomic_t got_signal = 0;
+static int install_lock_fd = -1;
+
+static void check_signal(void);
 
 static int remove_tree(const char *path) {
     pid_t pid;
@@ -50,6 +55,40 @@ static int remove_tree(const char *path) {
     return 0;
 }
 
+static void release_install_lock(void) {
+    if (install_lock_fd >= 0) {
+        flock(install_lock_fd, LOCK_UN);
+        close(install_lock_fd);
+        install_lock_fd = -1;
+    }
+}
+
+static int acquire_install_lock(void) {
+    char lock_path[512];
+
+    snprintf(lock_path, sizeof(lock_path), "%s/rat-install.lock", PORTS_DIR);
+
+    install_lock_fd = open(lock_path, O_CREAT | O_RDWR, 0644);
+    if (install_lock_fd < 0) {
+        return 1;
+    }
+
+    printf(">> waiting for install lock...\n");
+
+    while (flock(install_lock_fd, LOCK_EX) != 0) {
+        if (errno == EINTR) {
+            check_signal();
+            continue;
+        }
+
+        close(install_lock_fd);
+        install_lock_fd = -1;
+        return 1;
+    }
+
+    return 0;
+}
+
 static void cleanup(void) {
     if (rat_tmpfile[0] != '\0') {
         remove(rat_tmpfile);
@@ -70,6 +109,8 @@ static void cleanup(void) {
     if (build_log_path[0] != '\0') {
         remove(build_log_path);
     }
+
+    release_install_lock();
 }
 
 static void handle_signal(int sig) {
@@ -393,6 +434,7 @@ int main(int argc, char **argv) {
     char installed_deps[4096] = "";
     int attempt;
     int build_ok = 0;
+    int is_top_level_install = 0;
     pid_t pid = getpid();
 
     rat_tmpfile[0] = '\0';
@@ -434,6 +476,10 @@ int main(int argc, char **argv) {
 
         if (env_stack == NULL) {
             env_stack = "";
+        }
+
+        if (env_stack[0] == '\0') {
+            is_top_level_install = 1;
         }
 
         snprintf(stack, sizeof(stack), " %s ", env_stack);
@@ -498,6 +544,10 @@ int main(int argc, char **argv) {
     snprintf(cmd, sizeof(cmd), "mkdir -p '%s' '%s'", PORTS_DIR, DB_DIR);
     if (run_cmd(cmd) != 0) {
         fail("failed to create ports directory");
+    }
+
+    if (is_top_level_install && acquire_install_lock() != 0) {
+        fail("failed to acquire install lock");
     }
 
     printf(">> fetching %s ...\n", pkg);
